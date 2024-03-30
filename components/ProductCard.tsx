@@ -28,7 +28,7 @@ const ProductCard: FunctionComponent<CardProps> = ({price, cardId}) => {
                         <LazyLoadImage
                             src={getProductImage(price.product)}
                             alt={getProductDescription(price.product)}
-                            className="max-w-sm mx-auto h-full object-center object-cover"
+                            className="max-w-full min-h-full object-cover"
                         />
                 </div>
                 {/* Product Name */}

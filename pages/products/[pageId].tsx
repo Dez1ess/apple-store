@@ -31,7 +31,7 @@ interface CustomContext extends GetServerSidePropsContext {
 }
 
 export const getServerSideProps: GetServerSideProps = async (
-  context: CustomContext,
+  context: CustomContext
 ) => {
   const { pageId } = context.query;
 
@@ -113,18 +113,19 @@ const ProductPage: NextPage<CardProps & { price: Price[] }> = ({ price }) => {
 
       <main>
         <Header />
-        <div className="bg-gray-100 relative w-full">
-          <div className="w-full h-82 rounded-lg overflow-hidden">
+        <div className="bg-gray-100 min-h-screen relative w-full">
+          <div className="w-full max-w-5xl px-8 mx-auto sm:px-8 lg:px-3">
             <button
-              className="block mt-6 w-[10rem] mx-auto md:mx-[4rem] bg-gray-300 border border-transparent rounded-md py-2 px-6 items-center justify-center text-sm font-medium text-gray-900 hover:bg-gray-200"
+              className="inline-block mt-6 w-[10rem] bg-gray-300 border border-transparent rounded-md py-2 px-6 items-center justify-center text-sm font-medium text-gray-900 hover:bg-gray-200"
               onClick={handleBack}
             >{`< Back to store`}</button>
-            <LazyLoadImage
-              src={getProductImage(product)}
-              alt={getProductDescription(product)}
-              className="max-w-sm mx-auto h-full object-center object-cover mt-5"
-            />
           </div>
+
+          <LazyLoadImage
+            src={getProductImage(product)}
+            alt={getProductDescription(product)}
+            className="max-w-sm mx-auto h-full object-center object-cover mt-5"
+          />
           <h1 className=" text-3xl text-gray-900 text-center mt-8">
             {getProductName(product)}
           </h1>

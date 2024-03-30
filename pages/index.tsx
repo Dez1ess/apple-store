@@ -6,6 +6,7 @@ import { useState, useEffect, useContext } from "react";
 import Spinner from "../components/Spinner";
 import Head from "next/head";
 import CartContext from "../components/context/CartContext";
+import { Slide } from "@mui/material";
 
 interface Product extends Stripe.Product {}
 
@@ -79,6 +80,9 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
 
   const [loading, setLoading] = useState(true);
 
+  const { alert = null, isAlertVisible } = useContext(CartContext);
+  const [hideAlert, setHideAlert] = useState(false);
+
   useEffect(() => {
     const buttons = document.querySelectorAll("button");
     buttons.forEach((btn) => {
@@ -91,6 +95,27 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
       setLoading(false);
     }, 500);
   }, []);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout | null = null;
+  
+    if (isAlertVisible) {
+      timeout = setTimeout(() => {
+        setHideAlert(true);
+        
+      }, 1760);
+    }
+  
+    return () => {
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [isAlertVisible]);
+
+  const handleAlertExited = () => {
+    setHideAlert(false);
+  };
 
   const handleCategorieClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -120,8 +145,6 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
       };
     });
   };
-
-  const { alert } = useContext(CartContext);
 
   return (
     <>
@@ -163,7 +186,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
               }}
               className={`font-normal tracking-wide transition-all leading-10 text-2xl shadow-lg px-4 rounded-md`}
             >
-              MacBook
+              Mac
             </button>
           </div>
 
@@ -188,16 +211,22 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
               ))}
           </div>
           <div
-            className="justify-center items-center h-80"
-            style={{ display: loading ? "flex" : "none" }}
+            className={`fixed z-999 top-0 left-0 w-full h-full flex items-center justify-center ${loading ? "visible" : "invisible"}`}
           >
             {loading && <Spinner />}
           </div>
         </div>
-        <div
-          className={`w-[max-content] fixed bottom-10 left-5 transform ${alert ? "customFadeInOut" : ""}`}
-        >
-          {alert}
+        <div className="fixed bottom-10 left-5" style={{ zIndex: 999 }}>
+          {isAlertVisible && alert !== null && (
+            <Slide
+              direction="right"
+              in={!hideAlert}
+              onExited={handleAlertExited}
+              unmountOnExit
+            >
+              {alert}
+            </Slide>
+          )}
         </div>
       </main>
     </>

@@ -37,8 +37,8 @@ const Header: FunctionComponent = () => {
 
     return (
         <header className="relative bg-white">
-            <nav aria-label="Top" className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div className="relative px-4 sm:static sm:px-0 sm:pb-0">
+            <nav aria-label="Top" className="max-w-5xl mx-auto">
+                <div className="relative px-5 sm:static sm:px-5 sm:pb-0 md:px-5 lg:px-0">
                     <div className="h-16 flex items-center justify-between">
                         {/* Logo */}
                         <div className="flex-1 flex items-center">

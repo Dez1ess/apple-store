@@ -11,6 +11,6 @@
   }
 }
 
-.customFadeInOut {
-  animation: customFadeInOut 2s forwards;
+body {
+  overflow-y: scroll;
 }
