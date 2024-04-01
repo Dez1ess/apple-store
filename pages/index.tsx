@@ -134,7 +134,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks, watches }) => {
     if (isAlertVisible) {
       timeout = setTimeout(() => {
         setHideAlert(true);
-      }, 1800);
+      }, 1770);
     }
 
     return () => {
