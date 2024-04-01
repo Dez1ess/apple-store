@@ -7,6 +7,7 @@ import Spinner from "../components/Spinner";
 import Head from "next/head";
 import CartContext from "../components/context/CartContext";
 import { Slide } from "@mui/material";
+import Select, { SingleValue } from "react-select";
 
 interface Product extends Stripe.Product {}
 
@@ -50,11 +51,17 @@ export const getServerSideProps: GetServerSideProps = async () => {
     return product.metadata?.device === "macbook";
   });
 
+  const watches = all.filter((item) => {
+    const product = item.product as any;
+    return product.metadata?.device === "watch";
+  });
+
   return {
     props: {
       all,
       iphones,
       macbooks,
+      watches,
     },
   };
 };
@@ -63,20 +70,45 @@ type Props = {
   all: Stripe.Price[];
   iphones: Stripe.Price[];
   macbooks: Stripe.Price[];
+  watches: Stripe.Price[];
 };
 
 interface CategorieState {
   all: boolean;
   iphone: boolean;
   macbook: boolean;
+  watch: boolean;
 }
 
-const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
+interface Option {
+  value: string;
+  label: string;
+}
+
+const Home: NextPage<Props> = ({ all, iphones, macbooks, watches }) => {
   const [categorie, setCategorie] = useState<CategorieState>({
     all: true,
     iphone: false,
     macbook: false,
+    watch: false,
   });
+
+  const [selectedOption, setSelectedOption] = useState<Option | null>({
+    value: "new",
+    label: "Sort By Addition Date",
+  });
+
+  const options = [
+    { value: "new", label: "Sort By Addition Date" },
+    { value: "highToLow", label: "Price: High to Low" },
+    { value: "lowToHigh", label: "Price: Low to High" },
+  ];
+
+  const handleSelectChange = (
+    option: SingleValue<{ value: string; label: string }>
+  ) => {
+    setSelectedOption(option);
+  };
 
   const [loading, setLoading] = useState(true);
 
@@ -98,14 +130,13 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout | null = null;
-  
+
     if (isAlertVisible) {
       timeout = setTimeout(() => {
         setHideAlert(true);
-        
-      }, 1760);
+      }, 1800);
     }
-  
+
     return () => {
       if (timeout !== null) {
         clearTimeout(timeout);
@@ -141,9 +172,58 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
         all: false,
         iphone: false,
         macbook: false,
+        watch: false,
         [buttonValue]: !prevCategorie[buttonValue],
       };
     });
+  };
+
+  const applySorting = (
+    items: Stripe.Price[],
+    option: Option | null
+  ): Stripe.Price[] => {
+    if (!option) return items;
+
+    let selectedItems: Stripe.Price[] = [...items];
+
+    switch (option.value) {
+      case "highToLow": {
+        selectedItems.sort(
+          (a, b) => (b.unit_amount ?? 0) - (a.unit_amount ?? 0)
+        );
+        break;
+      }
+      case "lowToHigh": {
+        selectedItems.sort(
+          (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
+        );
+        break;
+      }
+      case "new": {
+        selectedItems.sort((a, b) => (b.created ?? 0) - (a.created ?? 0));
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+
+    return selectedItems;
+  };
+
+  const filteredItems = (): Stripe.Price[] => {
+    switch (true) {
+      case categorie.all:
+        return applySorting(all, selectedOption);
+      case categorie.iphone:
+        return applySorting(iphones, selectedOption);
+      case categorie.macbook:
+        return applySorting(macbooks, selectedOption);
+      case categorie.watch:
+        return applySorting(watches, selectedOption);
+      default:
+        return [];
+    }
   };
 
   return (
@@ -154,7 +234,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
       <main className="bg-gray-100 min-h-screen">
         <Header />
         <div className="max-w-5xl mx-auto py-8 px-4">
-          <div className="flex items-center gap-x-4 border-b pb-3 pl-5 lg:pl-0">
+          <div className="flex items-center justify-center sm:justify-between flex-wrap gap-4 border-b pb-3 pl-5 lg:pl-0 px-6 sm:px-8 lg:px-1">
             <button
               value="all"
               onClick={handleCategorieClick}
@@ -162,7 +242,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
                 color: categorie.all ? "white" : "black",
                 backgroundColor: categorie.all ? "black" : "white",
               }}
-              className={`font-normal tracking-wide transition-all leading-10 text-2xl shadow-lg px-4 rounded-md`}
+              className={`font-normal tracking-wide leading-10 text-2xl shadow-lg px-4 rounded-md lg:hover:opacity-60 transition-all`}
             >
               All
             </button>
@@ -173,7 +253,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
                 color: categorie.iphone ? "white" : "black",
                 backgroundColor: categorie.iphone ? "black" : "white",
               }}
-              className={`font-normal tracking-wide transition-all leading-10 text-2xl shadow-lg px-4 rounded-md`}
+              className={`font-normal tracking-wide leading-10 text-2xl shadow-lg px-4 rounded-md lg:hover:opacity-60 transition-all`}
             >
               iPhone
             </button>
@@ -184,34 +264,39 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks }) => {
                 color: categorie.macbook ? "white" : "black",
                 backgroundColor: categorie.macbook ? "black" : "white",
               }}
-              className={`font-normal tracking-wide transition-all leading-10 text-2xl shadow-lg px-4 rounded-md`}
+              className={`font-normal tracking-wide leading-10 text-2xl shadow-lg px-4 rounded-md lg:hover:opacity-60 transition-all`}
             >
-              Mac
+              MacBook
+            </button>
+            <button
+              value="watch"
+              onClick={handleCategorieClick}
+              style={{
+                color: categorie.watch ? "white" : "black",
+                backgroundColor: categorie.watch ? "black" : "white",
+              }}
+              className={`font-normal tracking-wide leading-10 text-2xl shadow-lg px-4 rounded-md lg:hover:opacity-60 transition-all`}
+            >
+              Watch
             </button>
           </div>
-
+          <div className="px-6 sm:px-8 lg:px-0">
+            <Select
+              value={selectedOption}
+              onChange={handleSelectChange}
+              options={options}
+              placeholder="Select sorting"
+            />
+          </div>
           <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-20 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
-            {/* All */}
-            {!loading &&
-              categorie.all &&
-              all.map((p) => (
-                <ProductCard cardId={p.id} key={p.id} price={p} />
-              ))}
-            {/* Iphones */}
-            {!loading &&
-              categorie.iphone &&
-              iphones.map((p) => (
-                <ProductCard cardId={p.id} key={p.id} price={p} />
-              ))}
-            {/* MacBooks */}
-            {!loading &&
-              categorie.macbook &&
-              macbooks.map((p) => (
-                <ProductCard cardId={p.id} key={p.id} price={p} />
-              ))}
+            {!loading && filteredItems().map((p) => (
+              <ProductCard cardId={p.id} key={p.id} price={p} />
+            ))}
           </div>
           <div
-            className={`fixed z-999 top-0 left-0 w-full h-full flex items-center justify-center ${loading ? "visible" : "invisible"}`}
+            className={`fixed z-999 top-0 left-0 w-full h-full flex items-center justify-center ${
+              loading ? "visible" : "invisible"
+            }`}
           >
             {loading && <Spinner />}
           </div>

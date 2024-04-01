@@ -1,15 +1,15 @@
 export function getProductName(product: any) {
-    return product?.name;
+  return product?.name;
 }
 
 export function getProductImage(product: any) {
-    return product?.images[0]
+  return product?.images[0]
 }
 
 export function getProductDescription(product: any) {
-    return product?.description ?? ''
+  return product?.description ?? ''
 }
 
-export function getPriceTotal(price: any) {
-    return Number(price.unit_amount / 100).toFixed(0);
+export function getProductPrice(product: any) {
+  return parseInt(product?.unit_amount) / 100;
 }

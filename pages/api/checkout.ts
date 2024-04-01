@@ -21,6 +21,7 @@ export default async function handler(
 ) {
   if (req.method != "POST") {
     res.status(405).json({ message: "POST method required" });
+    return;
   }
 
   try {
@@ -30,9 +31,12 @@ export default async function handler(
       apiVersion: "2023-08-16",
     });
 
+    const host = req.headers.host || ""; 
+    const baseUrl = `http://${host}`;
+
     const session = await stripe.checkout.sessions.create({
-      success_url: "https://apple-store-gules.vercel.app//success",
-      cancel_url: "https://apple-store-gules.vercel.app//cancel",
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/cancel?session_id={CHECKOUT_SESSION_ID}`,
       line_items: body.lineItems,
       mode: "payment",
     });
